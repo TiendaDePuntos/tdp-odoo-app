@@ -1,0 +1,69 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=${ODOO_DB_NAME:-postgres}
+      - POSTGRES_PASSWORD=${ODOO_DB_PASSWORD:-odoo}
+      - POSTGRES_USER=${ODOO_DB_USER:-odoo}
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+    ports:
+      - "${ODOO_DB_PORT:-5432}:5432"
+
+  # Servicio por defecto. La serie se elige con ODOO_SERIES + ODOO_IMAGE:
+  #   ODOO_SERIES=18.0 ODOO_IMAGE=odoo:18.0 docker compose up
+  # El --db-filter fija la base para que Odoo no muestre el selector de bases.
+  web:
+    image: ${ODOO_IMAGE:-odoo:17.0}
+    command: odoo --db-filter=^tdp$$
+    depends_on:
+      - db
+    ports:
+      - "${ODOO_WEB_PORT:-8069}:8069"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./addons/${ODOO_SERIES:-17.0}:/mnt/extra-addons
+    environment:
+      - HOST=db
+      - USER=${ODOO_DB_USER:-odoo}
+      - PASSWORD=${ODOO_DB_PASSWORD:-odoo}
+
+  # Perfiles para levantar 18 o 19 en paralelo al 17, cada uno con su base y su
+  # volumen: `docker compose --profile odoo18 up web18`
+  web18:
+    profiles: ["odoo18"]
+    image: odoo:18.0
+    command: odoo --db-filter=^tdp18$$
+    depends_on:
+      - db
+    ports:
+      - "${ODOO_WEB_PORT_18:-8169}:8069"
+    volumes:
+      - odoo-web-data-18:/var/lib/odoo
+      - ./addons/18.0:/mnt/extra-addons
+    environment:
+      - HOST=db
+      - USER=${ODOO_DB_USER:-odoo}
+      - PASSWORD=${ODOO_DB_PASSWORD:-odoo}
+
+  web19:
+    profiles: ["odoo19"]
+    image: odoo:19.0
+    command: odoo --db-filter=^tdp19$$
+    depends_on:
+      - db
+    ports:
+      - "${ODOO_WEB_PORT_19:-8269}:8069"
+    volumes:
+      - odoo-web-data-19:/var/lib/odoo
+      - ./addons/19.0:/mnt/extra-addons
+    environment:
+      - HOST=db
+      - USER=${ODOO_DB_USER:-odoo}
+      - PASSWORD=${ODOO_DB_PASSWORD:-odoo}
+
+volumes:
+  odoo-db-data:
+  odoo-web-data:
+  odoo-web-data-18:
+  odoo-web-data-19:
