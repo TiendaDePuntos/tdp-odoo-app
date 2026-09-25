@@ -59,8 +59,9 @@ done
 
 Lo que sí difiere: el botón de la barra del POS.
 
-- **17.0**: componente propio + `ProductScreen.addControlButton`.
-- **18.0 / 19.0**: `patch(ControlButtons.prototype, ...)` + template con `t-inherit="point_of_sale.ControlButtons"`.
+- **17.0**: componente propio + `ProductScreen.addControlButton` y `pos.showScreen`.
+- **18.0**: `patch(ControlButtons.prototype, ...)` + `pos.showScreen`.
+- **19.0**: el mismo patch, pero abre la pantalla con `pos.navigate`. En 19 las pantallas viven en `pos_pages` (con ruta), no en `pos_screens`. `redeem_screen.js` registra las dos y `goBack` usa `navigate` si existe, así el archivo sigue siendo el mismo en las tres series.
 
 ## Contrato con TDP
 

@@ -13,6 +13,8 @@ import {
 
 export class TdpRedeemScreen extends Component {
     static template = "tdp_loyalty.TdpRedeemScreen";
+    /** En Odoo 19, no guardar esta pantalla como la pantalla de la orden. */
+    static storeOnOrder = false;
 
     setup() {
         // `useService("pos")` en vez de `usePos()`: el hook cambia de ruta entre series.
@@ -118,6 +120,11 @@ export class TdpRedeemScreen extends Component {
     }
 
     goBack() {
+        if (typeof this.pos.navigate === "function") {
+            const page = this.pos.defaultPage;
+            this.pos.navigate(page.page, page.params);
+            return;
+        }
         this.pos.showScreen("ProductScreen");
     }
 
@@ -144,3 +151,15 @@ export class TdpRedeemScreen extends Component {
 }
 
 registry.category("pos_screens").add("TdpRedeemScreen", TdpRedeemScreen);
+
+// Odoo 19 reemplazo pos_screens por pos_pages. Si ProductScreen ya esta ahi,
+// esta instancia es 19 y hay que registrar la ruta para que navigate() la encuentre.
+const posPages = registry.category("pos_pages");
+if (posPages.contains("ProductScreen")) {
+    posPages.add("TdpRedeemScreen", {
+        name: "TdpRedeemScreen",
+        component: TdpRedeemScreen,
+        route: `/pos/ui/${odoo.pos_config_id}/tdp-redeem`,
+        params: {},
+    });
+}
