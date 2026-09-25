@@ -108,8 +108,7 @@ Maneja el ciclo de vida de la conexión y el backup de ventas:
 - **Connect/test/rotate/revoke:** CRUD de la `Integration` tipo ODOO, autenticación contra Odoo,
   escritura de `x_tdp_*` por JSON-RPC/JSON-2.
 - **client.created → res.partner:** el listener `OdooClientSyncService.createPartnerForClient`
-  busca el partner por email o `vat` antes de crear (idempotente), y guarda el `partnerId` en
-  `configuration.odoo.partnerIdsByClientId`.
+  busca el partner por email o `vat` antes de crear (idempotente).
 - **Poll de backup (`OdooSalePollJob`):** cada 5 min consulta `pos.order` con estado
   `paid|done|invoiced` y `date_order > lastSaleSyncAt`. Suma puntos via `externalDirectSumClient`;
   un 409 (ya existe por `external_id`) se trata como éxito (el POS JS ya lo reportó).
