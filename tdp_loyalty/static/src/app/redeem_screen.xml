@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="tdp_loyalty.TdpRedeemScreen">
+        <div class="screen h-100 overflow-auto bg-white">
+            <div class="p-4 d-flex flex-column gap-3" style="max-width: 880px; margin: 0 auto;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="m-0">Validar premio TDP</h3>
+                    <button class="btn btn-secondary" t-on-click="goBack">Volver</button>
+                </div>
+
+                <div class="d-flex gap-2 align-items-center">
+                    <input
+                        class="form-control"
+                        type="text"
+                        placeholder="Codigo de validacion"
+                        t-att-value="state.code"
+                        t-on-input="onCodeInput"
+                    />
+                    <button class="btn btn-primary" t-on-click="onSearch" t-att-disabled="state.isLoading">
+                        <t t-if="state.isLoading">Buscando...</t>
+                        <t t-else="">Buscar</t>
+                    </button>
+                </div>
+
+                <div class="alert alert-danger m-0" t-if="state.error">
+                    <t t-esc="state.error"/>
+                </div>
+
+                <div class="alert alert-success m-0" t-if="state.success">
+                    <t t-esc="state.success"/>
+                </div>
+
+                <t t-if="state.purchase">
+                    <div class="card p-3 d-flex flex-column gap-2">
+                        <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                            <strong>Estado: <t t-esc="statusText"/></strong>
+                            <button class="btn btn-success" t-on-click="onRedeem" t-att-disabled="!canRedeem">
+                                <t t-if="state.isRedeeming">Validando...</t>
+                                <t t-else="">Validar ahora</t>
+                            </button>
+                        </div>
+
+                        <div>
+                            <small class="text-muted">Codigo</small>
+                            <div><t t-esc="state.purchase.code"/></div>
+                        </div>
+                        <div>
+                            <small class="text-muted">Premio</small>
+                            <div><t t-esc="state.purchase.productName"/></div>
+                        </div>
+                        <div>
+                            <small class="text-muted">Cliente</small>
+                            <div><t t-esc="state.purchase.clientName"/> - <t t-esc="state.purchase.clientEmail"/></div>
+                        </div>
+                        <div>
+                            <small class="text-muted">Puntos</small>
+                            <div><t t-esc="state.purchase.points"/></div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>
