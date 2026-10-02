@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Los campos se declaran como `ir.model.fields` manuales para que el modulo
+        sea importable en Odoo Online, donde no se puede correr Python propio.
+        Tienda de Puntos los completa por API al conectar el comercio.
+    -->
+
+    <record id="field_pos_config_x_tdp_gateway_url" model="ir.model.fields">
+        <field name="name">x_tdp_gateway_url</field>
+        <field name="model">pos.config</field>
+        <field name="model_id" ref="point_of_sale.model_pos_config"/>
+        <field name="field_description">TDP Gateway URL</field>
+        <field name="ttype">char</field>
+        <field name="state">manual</field>
+        <field name="help">Base URL of the Tienda de Puntos gateway used by this Point of Sale. Filled in by Tienda de Puntos.</field>
+    </record>
+
+    <record id="field_pos_config_x_tdp_api_key" model="ir.model.fields">
+        <field name="name">x_tdp_api_key</field>
+        <field name="model">pos.config</field>
+        <field name="model_id" ref="point_of_sale.model_pos_config"/>
+        <field name="field_description">TDP API Key</field>
+        <field name="ttype">char</field>
+        <field name="state">manual</field>
+        <field name="help">Scoped API key issued by Tienda de Puntos for this Point of Sale. Filled in by Tienda de Puntos.</field>
+    </record>
+
+    <record id="field_pos_config_x_tdp_branch_id" model="ir.model.fields">
+        <field name="name">x_tdp_branch_id</field>
+        <field name="model">pos.config</field>
+        <field name="model_id" ref="point_of_sale.model_pos_config"/>
+        <field name="field_description">TDP Branch ID</field>
+        <!-- char, no integer: Tienda de Puntos escribe los cuatro campos como texto. -->
+        <field name="ttype">char</field>
+        <field name="state">manual</field>
+        <field name="help">Identifier of the Tienda de Puntos branch mapped to this Point of Sale.</field>
+    </record>
+
+    <record id="field_pos_config_x_tdp_pos_external_ref" model="ir.model.fields">
+        <field name="name">x_tdp_pos_external_ref</field>
+        <field name="model">pos.config</field>
+        <field name="model_id" ref="point_of_sale.model_pos_config"/>
+        <field name="field_description">TDP POS External Reference</field>
+        <field name="ttype">char</field>
+        <field name="state">manual</field>
+        <field name="help">Stable reference of this Point of Sale inside Tienda de Puntos.</field>
+    </record>
+
+    <record id="field_pos_config_x_tdp_last_sale_error" model="ir.model.fields">
+        <field name="name">x_tdp_last_sale_error</field>
+        <field name="model">pos.config</field>
+        <field name="model_id" ref="point_of_sale.model_pos_config"/>
+        <field name="field_description">TDP Last Sale Error</field>
+        <field name="ttype">char</field>
+        <field name="state">manual</field>
+        <field name="help">Last error returned by Tienda de Puntos when sending a sale from this Point of Sale.</field>
+    </record>
+
+    <!--
+        Espejos de solo lectura para poder mostrar el bloque en Ajustes del POS,
+        que edita `res.config.settings` y no `pos.config`.
+    -->
+
+    <record id="field_res_config_settings_x_tdp_gateway_url" model="ir.model.fields">
+        <field name="name">x_tdp_gateway_url</field>
+        <field name="model">res.config.settings</field>
+        <field name="model_id" ref="base.model_res_config_settings"/>
+        <field name="field_description">TDP Gateway URL</field>
+        <field name="ttype">char</field>
+        <field name="state">manual</field>
+        <field name="related">pos_config_id.x_tdp_gateway_url</field>
+        <field name="readonly" eval="True"/>
+        <field name="store" eval="False"/>
+    </record>
+
+    <record id="field_res_config_settings_x_tdp_api_key" model="ir.model.fields">
+        <field name="name">x_tdp_api_key</field>
+        <field name="model">res.config.settings</field>
+        <field name="model_id" ref="base.model_res_config_settings"/>
+        <field name="field_description">TDP API Key</field>
+        <field name="ttype">char</field>
+        <field name="state">manual</field>
+        <field name="related">pos_config_id.x_tdp_api_key</field>
+        <field name="readonly" eval="True"/>
+        <field name="store" eval="False"/>
+    </record>
+
+    <record id="field_res_config_settings_x_tdp_branch_id" model="ir.model.fields">
+        <field name="name">x_tdp_branch_id</field>
+        <field name="model">res.config.settings</field>
+        <field name="model_id" ref="base.model_res_config_settings"/>
+        <field name="field_description">TDP Branch ID</field>
+        <field name="ttype">char</field>
+        <field name="state">manual</field>
+        <field name="related">pos_config_id.x_tdp_branch_id</field>
+        <field name="readonly" eval="True"/>
+        <field name="store" eval="False"/>
+    </record>
+
+    <record id="field_res_config_settings_x_tdp_pos_external_ref" model="ir.model.fields">
+        <field name="name">x_tdp_pos_external_ref</field>
+        <field name="model">res.config.settings</field>
+        <field name="model_id" ref="base.model_res_config_settings"/>
+        <field name="field_description">TDP POS External Reference</field>
+        <field name="ttype">char</field>
+        <field name="state">manual</field>
+        <field name="related">pos_config_id.x_tdp_pos_external_ref</field>
+        <field name="readonly" eval="True"/>
+        <field name="store" eval="False"/>
+    </record>
+
+    <record id="field_res_config_settings_x_tdp_last_sale_error" model="ir.model.fields">
+        <field name="name">x_tdp_last_sale_error</field>
+        <field name="model">res.config.settings</field>
+        <field name="model_id" ref="base.model_res_config_settings"/>
+        <field name="field_description">TDP Last Sale Error</field>
+        <field name="ttype">char</field>
+        <field name="state">manual</field>
+        <field name="related">pos_config_id.x_tdp_last_sale_error</field>
+        <field name="readonly" eval="True"/>
+        <field name="store" eval="False"/>
+    </record>
+</odoo>

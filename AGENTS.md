@@ -21,12 +21,13 @@ IntegrationService desde el browser.
 
 ```
 odoo/
-├── docker-compose.yml         # runtime local: Postgres + Odoo 17 (+ perfiles 18 y 19)
+├── docker-compose.yml         # runtime local: Postgres + Odoo 17 (+ perfiles 18, 19 y 20)
 ├── .env.example
 ├── addons/
 │   ├── 17.0/tdp_loyalty/      # una carpeta por serie, mismo technical name
 │   ├── 18.0/tdp_loyalty/
-│   └── 19.0/tdp_loyalty/
+│   ├── 19.0/tdp_loyalty/
+│   └── 20.0/tdp_loyalty/
 └── docs/
 ```
 
@@ -41,27 +42,32 @@ static/description/icon.png              # PNG real 256x256
 static/description/index.html            # ficha en inglés para el ZIP / store
 static/src/app/tdp_api.js                # settings por ORM + fetch a IntegrationService
 static/src/app/redeem_screen.js|.xml     # pantalla de canje
-static/src/app/control_button.js|.xml    # botón que abre la pantalla  ← ÚNICO archivo que difiere por serie
-static/src/app/sale_notify.js            # patch de PaymentScreen: notifica la venta
+static/src/app/control_button.js|.xml    # botón que abre la pantalla  ← difiere por serie
+static/src/app/sale_notify.js            # notifica la venta; en 20 el hook es otro
 ```
 
-**Las tres series comparten `tdp_api.js`, `redeem_screen.*` y `sale_notify.js` byte a byte.**
-Si tocás uno, copiálo a las otras dos:
+**17, 18 y 19 comparten `tdp_api.js`, `redeem_screen.*` y `sale_notify.js` byte a byte.**
+20 comparte `tdp_api.js` y `redeem_screen.*`, pero no `sale_notify.js`.
+Si tocás un archivo compartido, copiálo a las otras series:
 
 ```bash
 cd TiendaDePuntos.ExternalApps/odoo
-for s in 18.0 19.0; do
-  for f in tdp_api.js redeem_screen.js redeem_screen.xml sale_notify.js; do
+for s in 18.0 19.0 20.0; do
+  for f in tdp_api.js redeem_screen.js redeem_screen.xml; do
     cp "addons/17.0/tdp_loyalty/static/src/app/$f" "addons/$s/tdp_loyalty/static/src/app/$f"
   done
 done
+for s in 18.0 19.0; do
+  cp "addons/17.0/tdp_loyalty/static/src/app/sale_notify.js" "addons/$s/tdp_loyalty/static/src/app/sale_notify.js"
+done
 ```
 
-Lo que sí difiere: el botón de la barra del POS.
+Lo que sí difiere: el botón de la barra del POS, y en 20 el aviso de venta.
 
 - **17.0**: componente propio + `ProductScreen.addControlButton` y `pos.showScreen`.
 - **18.0**: `patch(ControlButtons.prototype, ...)` + `pos.showScreen`.
-- **19.0**: el mismo patch, pero abre la pantalla con `pos.navigate`. En 19 las pantallas viven en `pos_pages` (con ruta), no en `pos_screens`. `redeem_screen.js` registra las dos y `goBack` usa `navigate` si existe, así el archivo sigue siendo el mismo en las tres series.
+- **19.0**: el mismo patch, pero abre la pantalla con `pos.navigate`. En 19 las pantallas viven en `pos_pages` (con ruta), no en `pos_screens`. `redeem_screen.js` registra las dos y `goBack` usa `navigate` si existe, así el archivo sigue siendo el mismo en 17, 18 y 19.
+- **20.0**: el mismo `pos.navigate` que 19, con el botón también dentro del diálogo de acciones (en mobile la barra no se renderiza). `sale_notify.js` parchea `OrderPaymentValidation.afterOrderValidation`: en 20 `PaymentScreen.validateOrder` no existe. El manifiesto tiene que ser `20.0.x`; si no, Odoo pone `installable=False` y el import falla con `Module not installable`.
 
 ## Contrato con TDP
 
@@ -97,9 +103,10 @@ docker compose up -d
 # Otra serie en el servicio principal
 ODOO_SERIES=18.0 ODOO_IMAGE=odoo:18.0 docker compose up -d
 
-# 18 o 19 en paralelo (bases 'tdp18' / 'tdp19', puertos 8169 / 8269)
+# 18, 19 o 20 en paralelo (bases 'tdp18' / 'tdp19' / 'tdp20', puertos 8169 / 8269 / 8369)
 docker compose --profile odoo18 up -d web18
 docker compose --profile odoo19 up -d web19
+docker compose --profile odoo20 up -d web20
 
 docker compose logs -f web
 docker compose down
@@ -135,7 +142,7 @@ docker compose config --quiet
 
 La verificación real es funcional: Odoo instala el módulo sin errores, el POS abre, el botón
 "Validar premio TDP" aparece y la pestaña Network muestra los `fetch` contra IntegrationService.
-Cada serie se prueba por separado: **17 no garantiza 18 ni 19**.
+Cada serie se prueba por separado: **17 no garantiza 18, 19 ni 20**.
 
 ## Convenciones
 
@@ -152,8 +159,8 @@ Cada serie se prueba por separado: **17 no garantiza 18 ni 19**.
 
 ## Al cambiar algo
 
-1. Editá la serie 17, copiá los archivos compartidos a 18 y 19.
+1. Editá la serie 17, copiá los archivos compartidos a 18, 19 y 20. No pises `sale_notify.js` de 20: ese hook es propio de la serie.
 2. Si cambiaste un endpoint o el payload, revisá que coincida con
    `TiendaDePuntos.IntegrationService/src/odoo` y actualizá la tabla de arriba.
-3. Si agregaste un archivo de assets, sumalo al `__manifest__.py` de las tres series.
+3. Si agregaste un archivo de assets, sumalo al `__manifest__.py` de las cuatro series.
 4. Actualizá este archivo si cambia el layout o los comandos.
