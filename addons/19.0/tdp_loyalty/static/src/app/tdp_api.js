@@ -169,12 +169,11 @@ export function tdpNormalizePurchase(response, code) {
 export function tdpBuildSalePayload(order, settings) {
     const partner = orderPartner(order);
     const orderRef = orderReference(order);
-    const totals = orderTotals(order);
-
     const payload = {
         external_id: orderRef,
         order_ref: orderRef,
-        amount_net: totals.net,
+        // Nombre historico: el valor es el total que paga el cliente, con impuestos.
+        amount_net: orderAmountDue(order),
         partner: {
             email: normalizeString(partner && partner.email),
             document_number: normalizeString(partner && partner.vat),
@@ -336,22 +335,45 @@ function orderReference(order) {
     );
 }
 
-function orderTotals(order) {
-    const total = callOrRead(order, ["get_total_with_tax", "getTotalWithTax"], "amount_total");
-    const tax = callOrRead(order, ["get_total_tax", "getTotalTax"], "amount_tax");
-    return { total, tax, net: Math.round((total - tax) * 100) / 100 };
+/**
+ * Total que paga el cliente: impuestos y redondeo de caja incluidos.
+ * No es el neto. En 17/18 el metodo es `getTotalDue`; desde 19 es el getter
+ * `totalDue`. Si el primero devuelve 0 (saldo restante ya cobrado), se prueba
+ * el siguiente hasta encontrar el total del pedido.
+ */
+function orderAmountDue(order) {
+    const due = firstPositiveAmount(order, [
+        "getTotalDue",
+        "totalDue",
+        "get_total_with_tax",
+        "getTotalWithTax",
+        "priceIncl",
+        "amount_total",
+    ]);
+    return Math.round(due * 100) / 100;
 }
 
-function callOrRead(order, methodNames, fallbackField) {
-    for (const methodName of methodNames) {
-        if (order && typeof order[methodName] === "function") {
-            const value = Number(order[methodName]());
-            if (Number.isFinite(value)) {
-                return value;
-            }
+function firstPositiveAmount(order, names) {
+    if (!order) {
+        return 0;
+    }
+
+    for (const name of names) {
+        const value = readOrderAmount(order, name);
+        if (value > 0) {
+            return value;
         }
     }
 
-    const value = Number(order && order[fallbackField]);
-    return Number.isFinite(value) ? value : 0;
+    return 0;
+}
+
+function readOrderAmount(order, name) {
+    try {
+        const member = order[name];
+        const value = typeof member === "function" ? Number(member.call(order)) : Number(member);
+        return Number.isFinite(value) ? value : 0;
+    } catch (error) {
+        return 0;
+    }
 }
