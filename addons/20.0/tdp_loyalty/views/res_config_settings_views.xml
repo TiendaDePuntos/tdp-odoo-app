@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_tdp_loyalty" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.tdp.loyalty</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <!--
+                Anclamos al contenedor `app` del POS en lugar de a un bloque concreto:
+                los ids de bloque cambian entre series, el nombre de la app no.
+            -->
+            <xpath expr="//app[@name='point_of_sale']" position="inside">
+                <block title="Tienda de Puntos" id="tdp_loyalty_section">
+                    <setting
+                        string="Connection"
+                        help="These values are filled in from Tienda de Puntos when you connect this Point of Sale. They are read-only here."
+                    >
+                        <div class="text-muted mb-2" invisible="x_tdp_api_key">
+                            This Point of Sale is not connected yet. Go to Tienda de Puntos, open Integrations and connect your Odoo.
+                        </div>
+                        <div class="content-group">
+                            <div class="row mb-2">
+                                <label string="Gateway URL" for="x_tdp_gateway_url" class="col-lg-4 o_light_label"/>
+                                <field name="x_tdp_gateway_url" readonly="1"/>
+                            </div>
+                            <div class="row mb-2">
+                                <label string="API key" for="x_tdp_api_key" class="col-lg-4 o_light_label"/>
+                                <field name="x_tdp_api_key" password="True" readonly="1"/>
+                            </div>
+                            <div class="row mb-2">
+                                <label string="Branch" for="x_tdp_branch_id" class="col-lg-4 o_light_label"/>
+                                <field name="x_tdp_branch_id" readonly="1"/>
+                            </div>
+                            <div class="row mb-2">
+                                <label string="POS reference" for="x_tdp_pos_external_ref" class="col-lg-4 o_light_label"/>
+                                <field name="x_tdp_pos_external_ref" readonly="1"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting
+                        string="Last sale error"
+                        help="Last error returned by Tienda de Puntos when this Point of Sale sent a sale."
+                        invisible="not x_tdp_last_sale_error"
+                    >
+                        <field name="x_tdp_last_sale_error" readonly="1"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

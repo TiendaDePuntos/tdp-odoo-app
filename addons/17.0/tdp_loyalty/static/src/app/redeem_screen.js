@@ -2,7 +2,7 @@
 
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-import { Component, useState } from "@odoo/owl";
+import { Component, proxy, useState } from "@odoo/owl";
 import {
     TDP_PATHS,
     tdpGetSettings,
@@ -10,6 +10,10 @@ import {
     tdpNormalizePurchase,
     tdpPost,
 } from "@tdp_loyalty/app/tdp_api";
+
+// Desde Odoo saas-19.4 / 20 el estado reactivo es `proxy`: `useState` ya no
+// existe. En 17-19 sigue siendo `useState`.
+const reactiveState = typeof proxy === "function" ? proxy : useState;
 
 export class TdpRedeemScreen extends Component {
     static template = "tdp_loyalty.TdpRedeemScreen";
@@ -20,7 +24,7 @@ export class TdpRedeemScreen extends Component {
         // `useService("pos")` en vez de `usePos()`: el hook cambia de ruta entre series.
         this.pos = useService("pos");
         this.orm = useService("orm");
-        this.state = useState({
+        this.state = reactiveState({
             code: "",
             isLoading: false,
             isRedeeming: false,

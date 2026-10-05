@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="tdp_loyalty.ControlButtons" t-inherit="point_of_sale.ControlButtons" t-inherit-mode="extension">
+        <!-- Barra del producto: en pantallas chicas Odoo no renderiza este bloque. -->
+        <xpath expr="//t[@t-if='!this.props.showRemainingButtons']" position="inside">
+            <button class="btn btn-secondary btn-lg lh-lg text-truncate" t-on-click="() => this.onClickTdpRedeem()" t-translation="off" t-att-aria-label="'Validar premio'" t-att-title="'Validar premio'">
+                <i class="fa fa-gift me-1" role="img"/>
+                Validar premio TDP
+            </button>
+        </xpath>
+        <!-- Dialogo "mas acciones", unico lugar donde el boton aparece en mobile. -->
+        <xpath expr="//div[contains(@class, 'control-buttons-modal')]" position="inside">
+            <button class="btn btn-secondary btn-lg lh-lg text-truncate" t-on-click="() => this.onClickTdpRedeem()" t-translation="off" t-att-aria-label="'Validar premio'" t-att-title="'Validar premio'">
+                <i class="fa fa-gift me-1" role="img"/>
+                Validar premio TDP
+            </button>
+        </xpath>
+    </t>
+</templates>

@@ -1,60 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
     <t t-name="tdp_loyalty.TdpRedeemScreen">
-        <div class="screen h-100 overflow-auto bg-white">
+        <!--
+            t-translation="off": en Odoo 20 el POS compila este template en el
+            cliente al abrir la pantalla. Traducir los textos llama a _t antes
+            de que las traducciones esten cargadas y la caja se cae.
+            placeholder va por t-att porque ese atributo se traduce igual.
+            Desde OWL 3 (saas-19.4 / 20) el template no hereda el componente:
+            estado y metodos se leen con `this.`. En 17-19 tambien funciona.
+        -->
+        <div class="screen h-100 overflow-auto bg-white" t-translation="off">
             <div class="p-4 d-flex flex-column gap-3" style="max-width: 880px; margin: 0 auto;">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="m-0">Validar premio TDP</h3>
-                    <button class="btn btn-secondary" t-on-click="goBack">Volver</button>
+                    <button class="btn btn-secondary" t-on-click="this.goBack">Volver</button>
                 </div>
 
                 <div class="d-flex gap-2 align-items-center">
                     <input
                         class="form-control"
                         type="text"
-                        placeholder="Codigo de validacion"
-                        t-att-value="state.code"
-                        t-on-input="onCodeInput"
+                        t-att-placeholder="'Codigo de validacion'"
+                        t-att-value="this.state.code"
+                        t-on-input="this.onCodeInput"
                     />
-                    <button class="btn btn-primary" t-on-click="onSearch" t-att-disabled="state.isLoading">
-                        <t t-if="state.isLoading">Buscando...</t>
+                    <button class="btn btn-primary" t-on-click="this.onSearch" t-att-disabled="this.state.isLoading">
+                        <t t-if="this.state.isLoading">Buscando...</t>
                         <t t-else="">Buscar</t>
                     </button>
                 </div>
 
-                <div class="alert alert-danger m-0" t-if="state.error">
-                    <t t-esc="state.error"/>
+                <div class="alert alert-danger m-0" t-if="this.state.error">
+                    <t t-out="this.state.error"/>
                 </div>
 
-                <div class="alert alert-success m-0" t-if="state.success">
-                    <t t-esc="state.success"/>
+                <div class="alert alert-success m-0" t-if="this.state.success">
+                    <t t-out="this.state.success"/>
                 </div>
 
-                <t t-if="state.purchase">
+                <t t-if="this.state.purchase">
                     <div class="card p-3 d-flex flex-column gap-2">
                         <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
-                            <strong>Estado: <t t-esc="statusText"/></strong>
-                            <button class="btn btn-success" t-on-click="onRedeem" t-att-disabled="!canRedeem">
-                                <t t-if="state.isRedeeming">Validando...</t>
+                            <strong>Estado: <t t-out="this.statusText"/></strong>
+                            <button class="btn btn-success" t-on-click="this.onRedeem" t-att-disabled="!this.canRedeem">
+                                <t t-if="this.state.isRedeeming">Validando...</t>
                                 <t t-else="">Validar ahora</t>
                             </button>
                         </div>
 
                         <div>
                             <small class="text-muted">Codigo</small>
-                            <div><t t-esc="state.purchase.code"/></div>
+                            <div><t t-out="this.state.purchase.code"/></div>
                         </div>
                         <div>
                             <small class="text-muted">Premio</small>
-                            <div><t t-esc="state.purchase.productName"/></div>
+                            <div><t t-out="this.state.purchase.productName"/></div>
                         </div>
                         <div>
                             <small class="text-muted">Cliente</small>
-                            <div><t t-esc="state.purchase.clientName"/> - <t t-esc="state.purchase.clientEmail"/></div>
+                            <div><t t-out="this.state.purchase.clientName"/> - <t t-out="this.state.purchase.clientEmail"/></div>
                         </div>
                         <div>
                             <small class="text-muted">Puntos</small>
-                            <div><t t-esc="state.purchase.points"/></div>
+                            <div><t t-out="this.state.purchase.points"/></div>
                         </div>
                     </div>
                 </t>
