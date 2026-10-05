@@ -179,7 +179,7 @@ export function tdpBuildSalePayload(order, settings) {
             email: normalizeString(partner && partner.email),
             document_number: normalizeString(partner && partner.vat),
             first_name: normalizeString(partner && partner.name),
-            phone: normalizeString(partner && (partner.phone || partner.mobile)),
+            phone: normalizeString(partnerPhone(partner)),
         },
     };
 
@@ -295,6 +295,32 @@ function orderPartner(order) {
         return order.getPartner();
     }
     return order.partner_id || order.partner || null;
+}
+
+/**
+ * Telefono del cliente. En 17 y 18 el contacto tiene `phone` y `mobile`.
+ * Desde 19 Odoo borro `mobile`: leerlo hace que el POS lo pida con
+ * search_read y el servidor responde "Invalid field 'mobile'".
+ * Solo se leen campos que ya estan cargados en el registro.
+ */
+function partnerPhone(partner) {
+    return readLoadedField(partner, "phone") || readLoadedField(partner, "mobile");
+}
+
+function readLoadedField(record, field) {
+    if (!record || typeof record !== "object") {
+        return undefined;
+    }
+
+    const raw = record.raw;
+    if (raw && typeof raw === "object" && Object.prototype.hasOwnProperty.call(raw, field)) {
+        return raw[field];
+    }
+    if (Object.prototype.hasOwnProperty.call(record, field)) {
+        return record[field];
+    }
+
+    return undefined;
 }
 
 function orderReference(order) {
