@@ -84,8 +84,9 @@ Todas las llamadas salen del browser del cajero contra IntegrationService, con
 | Buscar canje por código | `POST {gateway}/integration/odoo/purchases/find-by-code` |
 | Entregar canje | `POST {gateway}/integration/odoo/purchases/redeem` |
 
-La venta manda `external_id = pos_reference` (idempotencia), `amount_net`, `branch_id` y
-`partner.email` / `partner.document_number`. Sin email ni documento no se envía: no hay a
+La venta manda `external_id = pos_reference` (idempotencia), `amount_net` (el total que
+paga el cliente, con impuestos y redondeo de caja; el nombre del campo es historico),
+`branch_id` y `partner.email` / `partner.document_number`. Sin email ni documento no se envía: no hay a
 quién sumarle puntos. Si el envío falla, el error queda en `x_tdp_last_sale_error` y la venta
 la recupera el poll de `pos.order` desde WebApi. **La caja nunca se bloquea por TDP.**
 
