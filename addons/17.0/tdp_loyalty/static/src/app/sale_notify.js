@@ -16,9 +16,10 @@ import {
 const MAX_ERROR_LENGTH = 250;
 
 /**
- * Suma los puntos de la venta despues de que Odoo la valida. El envio no puede
- * bloquear la caja: cualquier fallo queda en `x_tdp_last_sale_error` y lo
- * recupera el poll de Tienda de Puntos.
+ * Suma los puntos de la venta despues de que Odoo la valida, o los resta si la
+ * orden es un reembolso (monto negativo). El envio no puede bloquear la caja:
+ * cualquier fallo queda en `x_tdp_last_sale_error` y lo recupera el poll de
+ * Tienda de Puntos.
  */
 async function tdpNotifySale(pos, orm, order) {
     if (!order) {
@@ -39,7 +40,7 @@ async function tdpNotifySale(pos, orm, order) {
             console.warn("[TDP] Venta sin referencia: no se envia a Tienda de Puntos");
             return;
         }
-        if (payload.amount_net <= 0) {
+        if (!payload.amount_net) {
             return;
         }
         if (!tdpSalePayloadHasClient(payload)) {

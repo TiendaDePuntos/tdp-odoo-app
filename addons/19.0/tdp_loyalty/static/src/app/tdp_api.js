@@ -159,7 +159,7 @@ export function tdpNormalizePurchase(response, code) {
         isExpired,
         isValid: !isAlreadyRedeemed && !isCanceled && !isExpired,
         expiresAt,
-        productName: product.name || (purchase.moneyAmount ? `Canje por dinero (${purchase.moneyAmount})` : "-"),
+        productName: product.name || (purchase.moneyAmount ? `Canje por dinero (${formatMoney(purchase.moneyAmount)})` : "-"),
         clientName: clientName || "-",
         clientEmail: client.email || "-",
         points: purchase.points || 0,
@@ -173,6 +173,7 @@ export function tdpBuildSalePayload(order, settings) {
         external_id: orderRef,
         order_ref: orderRef,
         // Nombre historico: el valor es el total que paga el cliente, con impuestos.
+        // Negativo en un reembolso.
         amount_net: orderAmountDue(order),
         partner: {
             email: normalizeString(partner && partner.email),
@@ -226,6 +227,23 @@ function normalizeString(value) {
     }
     const trimmed = value.trim();
     return trimmed.length > 0 ? trimmed : undefined;
+}
+
+/**
+ * Monto para el cajero: el backend manda un decimal crudo ("2500.000000").
+ * Se muestra "$2.500", con centavos solo si los hay ("$2.500,50").
+ */
+function formatMoney(value) {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) {
+        return String(value);
+    }
+    const hasCents = Math.round(amount * 100) % 100 !== 0;
+    const formatted = amount.toLocaleString("es-AR", {
+        minimumFractionDigits: hasCents ? 2 : 0,
+        maximumFractionDigits: 2,
+    });
+    return `$${formatted}`;
 }
 
 function normalizeBaseUrl(value) {
@@ -340,27 +358,31 @@ function orderReference(order) {
  * No es el neto. En 17/18 el metodo es `getTotalDue`; desde 19 es el getter
  * `totalDue`. Si el primero devuelve 0 (saldo restante ya cobrado), se prueba
  * el siguiente hasta encontrar el total del pedido.
+ * Un reembolso tiene total negativo y se manda negativo: TDP resta los puntos.
+ * Los negativos se buscan solo si no hay ningun total positivo, para que una
+ * venta normal siga tomando exactamente el mismo valor que antes.
  */
 function orderAmountDue(order) {
-    const due = firstPositiveAmount(order, [
+    const names = [
         "getTotalDue",
         "totalDue",
         "get_total_with_tax",
         "getTotalWithTax",
         "priceIncl",
         "amount_total",
-    ]);
+    ];
+    const due = firstAmount(order, names, (value) => value > 0) || firstAmount(order, names, (value) => value < 0);
     return Math.round(due * 100) / 100;
 }
 
-function firstPositiveAmount(order, names) {
+function firstAmount(order, names, accepts) {
     if (!order) {
         return 0;
     }
 
     for (const name of names) {
         const value = readOrderAmount(order, name);
-        if (value > 0) {
+        if (accepts(value)) {
             return value;
         }
     }
